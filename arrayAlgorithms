@@ -1,0 +1,2312 @@
+package array;
+import java.util.*;
+public class Array {
+	public static int eggDropping2(int n, int k)                               //Time Complexity: O(n*(k^2))
+	{                                                                          //Auxiliary Space: O(nk)
+		int trials[][] = new int[n+1][k+1];
+		int i;
+		for(i=1; i<=n; i++)
+		{
+		   trials[i][0] = 0;
+		   trials[i][1] = 1;
+		}
+		for(i=1; i<=k; i++)
+			trials[1][i] = i;
+		int j, m, temp;
+		for(i=2; i<=n; i++)
+		{
+			for(j=2; j<=k; j++)
+			{
+				trials[i][j] = Integer.MAX_VALUE;
+				for(m=0; m<j; m++)
+				{
+					temp = 1 + Math.max(trials[n-1][m-1], trials[n][j-m]);
+					if(temp < trials[i][j])
+						trials[i][j] = temp;
+				}
+			}
+		}
+		return trials[n][k];
+	}
+	public static int eggDropping(int n, int k)
+	{
+		if(k == 0 || k == 1)
+			return k;
+		if(n == 1)
+			return k;
+		int minTrials = Integer.MAX_VALUE;
+		int temp;
+		for(int i=1; i<=k; i++)
+		{
+			temp = Math.max(eggDropping(n-1, i-1), eggDropping(n, k-i));
+			if(temp < minTrials)
+				minTrials = temp;
+		}
+		return minTrials + 1;
+	}
+	public static int cuttingRod2(int price[], int len)                            //Time Complexity: O(n^2)
+	{                                                                              //Auxiliary Space: O(n)
+		int val[] = new int[len+1];
+		val[0] = 0;
+		for(int i=1; i<=len; i++)
+		{
+			val[i] = Integer.MIN_VALUE;
+			for(int j=0; j<i; j++)
+			{
+				val[i] = Math.max(val[i], price[j] + val[i-j-1]);
+			}
+		}
+		return val[len];
+	}
+	public static int cuttingRod(int price[], int len)                              //Time Complexity: Exponential
+	{
+		if(len <= 0)
+			return 0;
+		int maxValue = Integer.MIN_VALUE;
+		for(int i=1; i<len; i++)
+		   maxValue = Math.max(maxValue, price[i] + cuttingRod(price, len-i-1));
+		return maxValue;	
+	}
+	public static int palindromePartition(char[] str)                               //Time Complexity: O(n^3)
+	{
+		boolean pal[][] = new boolean[str.length][str.length];
+		int cuts[][] = new int[str.length][str.length];
+		for(int i=0; i<str.length; i++)
+		{
+			pal[i][i] = true;
+			cuts[i][i] = 0;
+		}
+		int n = str.length;
+		int j;
+		for(int len=2; len<=n; len++)
+		{
+			for(int i=0; i<n-len+1; i++)
+			{
+				j = i+len-1;
+				if(len == 2)
+					pal[i][j] = (str[i] == str[j]);
+				else
+					pal[i][j] = (str[i] == str[j]) && (pal[i+1][j-1]);
+				if(pal[i][j] == true)
+					cuts[i][j] = 0;
+				else
+				{
+					cuts[i][j] = Integer.MAX_VALUE;
+					for(int k=i; k<=j; k++)
+						cuts[i][j] = Math.min(cuts[i][j], 1+cuts[i][k]+cuts[k+1][j]);
+				}
+			}
+		}
+		return cuts[0][n-1];
+	}
+	public static int longestPalindromicSubstring3(char[] str)                     //Time Complexity: O(n^2)
+	{                                                                              //Auxiliary Space: O(n^2)
+		char[] strRev;
+		strRev = stringReverse(str);
+		return longestCommonSubstring(str, strRev);
+	}
+	public static int longestCommonSubstring(char[] arr1, char[] arr2)
+	{
+		int lcs[][] = new int[arr1.length+1][arr2.length+1];
+		int m = arr1.length;
+		int n = arr2.length;
+		int maxLength = 0;
+		for(int i=0; i<=m; i++)
+		{
+			for(int j=0; j<=m ; j++)
+			{
+				if(i==0 || j==0)
+					lcs[i][j] = 0;
+				else if(arr1[i-1] == arr2[j-1])
+				{
+					lcs[i][j] = 1 + lcs[i-1][j-1];
+					if(maxLength < lcs[i][j])
+						maxLength = lcs[i][j];
+				}
+				else
+					lcs[i][j] = 0;
+			}
+		}
+		return maxLength;
+	}
+	public static int longestPalindromicSubstring2(char[] str)                          //Time Complexity: O(n^2)
+	{                                                                                   //Auxiliary Space: O(1)
+		int start = 0;
+		int maxLength = 1;
+		int n = str.length;
+		int low, high;
+		for(int i=1; i<n; i++)
+		{
+			low = i-1;     //Even Length Palindromes
+			high = i;
+			while(low >= 0 && high < n && str[low] == str[high])
+			{
+				if(maxLength < (high - low + 1))
+				{
+					start = low;
+					maxLength = high - low + 1;		
+				}
+				low--;
+				high++;
+			}
+			low = i-1;     //Odd Length Palindromes
+			high = i+1;
+			while(low >=0 && high < n && str[low] == str[high])
+			{
+				if(maxLength < (high - low + 1))
+				{
+					start = low;
+					maxLength = high - low + 1;
+				}
+				low--;
+				high++;
+			}
+		}
+		printSubstring(str, start, start+maxLength);
+		return maxLength;
+	}
+	public static int longestPalindromicSubstring(char[] str)
+	{
+		boolean lps[][] = new boolean[str.length][str.length];
+		int i;
+		int start = 0;
+		int maxLength = 1;
+		for(i=0; i<str.length; i++)
+			lps[i][i] = true;
+		for(i=0; i<str.length; i++)
+		{
+			if(str[i] == str[i+1])
+			{
+				lps[i][i+1] = true;
+				start = i;
+				maxLength = 2;
+			}
+		}
+		int n = str.length;
+		int j;
+		for(int len=3; len<=n; len++)
+		{
+			for(i=0; i<n-len+1; i++)
+			{
+				j = i+len-1;
+				if(str[i] == str[j] && lps[i+1][j-1] == true)
+				{
+					lps[i][j] = true;
+					if(maxLength < len)
+					{
+						start = i;
+						maxLength = len;
+					}
+				}
+			}
+		}
+		printSubstring(str, start, maxLength);
+		return maxLength;
+	}
+	public static void printSubstring(char str[], int start, int maxLength)
+	{
+		for(int i=start; i<start+maxLength; i++)
+			System.out.print(str[i]);
+	}
+	public static int longestPalindromicSubsequence3(char[] str)                        //Time Complexity: O(n^2)
+	{                                                                                   //Space Complexity: O(n^2)
+		char strRev[];
+		strRev = stringReverse(str);
+		return longestCommonSubsequence2(str, strRev);
+	}
+	public static char[] stringReverse(char str[])
+	{
+		int start = 0, end = str.length-1;
+		char temp;
+		while(start < end)
+		{
+			temp = str[start];
+			str[start] = str[end];
+			str[end] = temp;
+		}
+		return str;
+	}
+	public static int longestPalindromicSubsequence2(char[] str)                        //Time Complexity: O(n^2)
+	{                                                                                   //Space Complexity: O(n^2)
+		int n = str.length;
+		int lps[][] = new int[n][n];
+		for(int i=0; i<lps.length; i++)
+			lps[i][i] = 1;
+		int j;
+		for(int wid=2; wid<=n; wid++)
+		{
+			for(int i=0; i<n-wid+1; i++)
+			{
+				j = i + wid - 1;
+			    if(wid == 2 && str[i] == str[j])
+			    	lps[i][j] = 2;
+			    else if(str[i] == str[j])
+			    	lps[i][j] = 2 + lps[i+1][j-1];
+			    else
+			    	lps[i][j] = Math.max(lps[i+1][j], lps[i][j-1]);
+		    }
+		}
+		return lps[0][n-1];
+	}
+	public static int longestPalindromicSubsequence(char str[], int i, int j)            //Time Complexity: O(2^n) Exponential   
+	{
+		if(i == j)
+			return 1;
+		if(str[i] == str[j] && i == j + 1)
+			return 2;
+		else if(str[i] == str[j])
+			return 2 + longestPalindromicSubsequence(str, i+1, j-1);
+		return Math.max(longestPalindromicSubsequence(str, i+1, j), longestPalindromicSubsequence(str, i, j-1));
+	}
+	public static int knapsack2(int w, int val[], int wt[], int n)                            //Time Complexity: O(nw)
+	{                                                                                         //Dynamic Programming
+		int kp[][] = new int[n+1][w+1];
+		for(int i=0; i<=n; i++)
+		{
+			for(int j=0; j<=w; j++)
+			{
+				if(i == 0 || j == 0)
+					kp[i][j] = 0;
+				else if(wt[i-1] > w)
+					kp[i][j] = kp[i-1][j];
+				else
+					kp[i][j] = Math.max(val[i-1] + kp[i-1][j-wt[i-1]], kp[i-1][j]);
+			}
+		}
+		return kp[n][w];
+	}
+	public static int knapsack(int w, int val[], int wt[], int n)                           //Time Complexity: O(2^n) Exponential
+	{ 
+		if(n == 0 || w == 0)
+			return 0;
+		if(wt[n-1] > w)
+			return knapsack(w, val, wt, n-1);
+		return Math.max(val[n-1] + knapsack(w-wt[n-1], val, wt, n-1), knapsack(w, val, wt, n-1));
+	}
+	public static boolean isPartition2(int arr[])                               //Time Complexity: O(sum * n)
+	{                                                                           //Auxiliary Space: O(sum * n)   -- this method is not feasible for arrays with large sum
+		int sum = 0;                                                            //Dynamic Programming
+		int i;
+		for(i=0; i<arr.length; i++)
+			sum += arr[i];
+		if(sum % 2 != 0)
+			return false;
+		int n = arr.length;
+		boolean part[][] = new boolean[sum/2 + 1][n + 1];
+		for(i=0; i<=n; i++)
+			part[0][i] = true;
+		for(i=1; i<=sum/2; i++)
+			part[i][0] = false;
+		for(i=1; i<=sum/2; i++)
+		{
+			for(int j=1; j<=n; j++)
+			{
+				if(arr[j-1] > i)                                              //i is the sum (rows), j is the number in the array (cols) 
+				    part[i][j] = part[i][j-1];
+				else
+					part[i][j] = part[i][j-1] || part[i-arr[j-1]][j-1];
+			}
+		}
+		return part[sum/2][n];
+	}
+	public static boolean isPartition(int arr[])                                //Time Complexity: O(2 ^ n) -- There are two choices - include and exclude for each element.
+	{
+		int sum = 0;
+		for(int i=0; i<arr.length; i++)
+			sum += arr[i];
+		if(sum % 2 != 0)
+			return false;
+		return findSubsetSum(arr, arr.length, sum/2);
+	}
+	public static boolean findSubsetSum(int arr[], int n, int sum)
+	{
+		if(sum == 0)
+			return true;
+		if(n == 0 && sum != 0)
+			return false;
+		if(arr[n-1] > sum)
+			return findSubsetSum(arr, n-1, sum);
+		return findSubsetSum(arr, n-1, sum) || findSubsetSum(arr, n-1, sum-arr[n-1]);
+	}
+	public static int maxChainLength3(Pair arr[])
+	{
+		Pair currentActivity = arr[0];
+		int activityCount = 1;
+		for(int i=1; i<arr.length; i++)
+		{
+			if(currentActivity.b < arr[i].a)
+			{
+				currentActivity = arr[i];
+				activityCount++;
+			}
+		}
+		return activityCount;
+	}
+	
+	static int maxMcl = Integer.MIN_VALUE;
+	public static int maxChainLength2(Pair arr[], int n)                          //check
+	{
+		if(n == 1)
+			return 1;
+		int maxEndingHere = Integer.MIN_VALUE;
+		for(int i=1; i<arr.length; i++)
+		{
+			int mclTemp = maxChainLength2(arr, i);
+			if(arr[i-1].b < arr[n-1].a && maxEndingHere < mclTemp + 1)
+				maxEndingHere = mclTemp + 1;
+		}
+		if(maxMcl < maxEndingHere)
+			maxMcl = maxEndingHere;
+		return maxMcl;
+	}
+	public static int maxChainLength(Pair arr[])                               //Time Complexity: O(n ^ 2)
+	{
+		int mcl[] = new int[arr.length];
+		int i;
+		for(i=0; i<arr.length; i++)
+			mcl[i] = 1;
+		for(i=1; i<arr.length; i++)
+		{
+			for(int j=0; j<i; j++)
+			{
+				if(arr[j].b < arr[i].a && mcl[i] < mcl[j] + 1)
+					mcl[i] = mcl[j] + 1;
+			}
+		}
+		int maxMcl = Integer.MIN_VALUE;
+		for(i=0; i<mcl.length; i++)
+		{
+			if(maxMcl < mcl[i])
+				maxMcl = mcl[i];
+		}
+		return maxMcl;
+	}
+	static int maxMsis = Integer.MIN_VALUE;
+	public static int maxSumIncreasingSubsequence2(int arr[], int n)                  //check
+	{
+		if(n == 1)
+			return arr[0];
+		int maxEndingHere = Integer.MIN_VALUE;
+		for(int i=1; i<n; i++)
+		{
+			int msisTemp = maxSumIncreasingSubsequence2(arr, i);
+			if(arr[i-1] < arr[n-1] && maxEndingHere < msisTemp + arr[i])
+				maxEndingHere = msisTemp + arr[i];
+		}
+		if(maxMsis < maxEndingHere)
+			maxMsis = maxEndingHere;
+		return maxEndingHere;
+	}
+	public static int maxSumIncreasingSubsequence(int arr[])                             //Time Complexity: O(n ^ 2)
+	{                                                                                    //Dynamic Programming - Tabulation
+		int msis[] = new int[arr.length];
+		int i;
+		for(i=0; i<arr.length; i++)
+			msis[i] = arr[i];
+		for(i=1; i<arr.length; i++)
+		{
+			for(int j=0; j<i; j++)
+			{
+				if(arr[j] < arr[i] && msis[i] < msis[j] + arr[i])
+					msis[i] = msis[j] + arr[i];
+			}
+		}
+		int maxMsis = Integer.MIN_VALUE;
+		for(i=0; i<msis.length; i++)
+		{
+			if(maxMsis < msis[i])
+				maxMsis = msis[i];
+		}
+		return maxMsis;
+	}
+	public static int longestBitonicSubsequence(int arr[])
+	{
+		int lis[] = new int[arr.length];
+		int i;
+		for(i=0; i<arr.length; i++)
+			lis[i] = 1;
+		for(i=1; i<arr.length; i++)
+		{
+			for(int j=0; j<i; j++)
+			{
+				if(arr[j] < arr[i] && lis[i] < lis[j] + 1)
+					lis[i] = lis[j] + 1;
+			}
+		}
+		int lds[] = new int[arr.length];
+		for(i=0; i<arr.length; i++)
+			lds[i] = 1;
+		for(i=arr.length-2; i>=0; i--)
+		{
+			for(int j=arr.length-1; j>i; j--)
+			{
+				if(arr[j] < arr[i] && lds[i] < lds[j] + 1)
+					lds[i] = lds[j] + 1;
+			}
+		}
+		int maxBitonicLength = Integer.MIN_VALUE;
+		for(i=0; i<arr.length; i++)
+		{
+			if(maxBitonicLength < lis[i] + lds[i] - 1)
+				maxBitonicLength = lis[i] + lds[i] - 1;
+		}
+		return maxBitonicLength;
+	}
+	
+	static int lcs3[][];
+	public static int longestCommonSubsequence3(char arr1[], char arr2[])
+	{                                                                                                      //Dynamic Programming - Memoization
+		lcs3 = new int[arr1.length+1][arr2.length+1];
+		for(int i=0; i<lcs3.length; i++)
+			for(int j=0; j<arr2.length; j++)
+			   lcs3[i][j] = -1;
+		return longestCommonSubsequence3Util(arr1, arr2, arr1.length, arr2.length, 0, 0);
+	}
+	public static int longestCommonSubsequence3Util(char arr1[], char arr2[], int m, int n, int i, int j)
+	{
+		if(lcs3[i][j] == -1)
+		{
+			if(i == m || j == n)
+				lcs3[i][j] = 0;
+			else if(arr1[i] == arr2[j])
+				lcs3[i][j] = 1 + longestCommonSubsequence3Util(arr1, arr2, m, n, i+1, j+1);
+			else
+				lcs3[i][j] = Math.max(longestCommonSubsequence3Util(arr1, arr2, m, n, i+1, j), longestCommonSubsequence3Util(arr1, arr2, m , n, i, j+1));
+		}
+		return lcs3[i][j];
+	}
+	public static int longestCommonSubsequence2(char arr1[], char arr2[])                            //Time Complexity: O(mn)
+	{                                                                                                //Dynamic Programming: Tabulation
+		int m = arr1.length, n = arr2.length;
+		int lcs[][] = new int[m+1][n+1];
+		for(int i=0; i<=m ; i++)
+		{
+			for(int j=0; j<=n; j++)
+			{
+				if(i == 0 || j == 0)
+					lcs[i][j] = 0;
+				else if(arr1[i-1] == arr2[j-1])
+					lcs[i][j] = 1 + lcs[i-1][j-1];
+				else
+					lcs[i][j] = Math.max(lcs[i-1][j], lcs[i][j-1]);
+			}
+		}
+		return lcs[m][n];
+	}
+	public static int longestCommonSubsequence(char arr1[], char arr2[], int m, int n)              //Time Complexity: O(2 ^ n)
+	{
+		if(m == 0 || n == 0)
+			return 0;
+		if(arr1[m-1] == arr2[n-1])
+			return 1 + longestCommonSubsequence(arr1, arr2, m-1, n-1);
+		else
+			return Math.max(longestCommonSubsequence(arr1, arr2, m-1, n), longestCommonSubsequence(arr1, arr2, m, n-1));
+	}
+	public static int longestDecreasingSubsequence(int arr[])
+	{
+		int lds[] = new int[arr.length];
+		int i;
+		for(i=0; i<arr.length; i++)
+			lds[i] = 1;
+		for(i=arr.length-2; i>=0; i++)                                              //Note: (i>=0) is correct. verify output.
+		{
+			for(int j=arr.length-1; j>i; j--)
+			{
+				if(arr[j] < arr[i] && lds[i] < lds[j] + 1)
+					lds[i] = lds[j] + 1;
+			}
+		}
+		int maxLds = Integer.MIN_VALUE;
+		for(i=0; i<lds.length; i++)
+			if(maxLds < lds[i])
+				maxLds = lds[i];
+		return maxLds;
+	}
+	public static int longestIncreasingSubsequence2(int arr[])
+	{
+		int lis[] = new int[arr.length];
+		int i;
+		for(i=0; i<lis.length; i++)
+			lis[i] = 1;
+		for(i=1; i<arr.length; i++)
+		{
+			for(int j=0; j<i; j++)
+			{
+				if(arr[j] < arr[i] && lis[i] < lis[j] + 1)
+					lis[i] = lis[j] + 1;
+			}
+		}
+		int maxLis = Integer.MIN_VALUE;
+		for(i=0; i<lis.length; i++)
+			if(maxLis < lis[i])
+				maxLis = lis[i];
+		return maxLis;
+	}
+	
+	static int maxLis = Integer.MIN_VALUE;
+	public static int longestIncreasingSubsequence(int arr[], int n)
+	{
+		if(n == 1)
+			return 1;
+		int maxEndingHere = Integer.MIN_VALUE;
+		for(int i=1; i<n; i++)
+		{
+			int lisTemp = longestIncreasingSubsequence(arr, i);
+			if(arr[i-1] < arr[n-1] && maxEndingHere < lisTemp + 1)
+				maxEndingHere = lisTemp + 1;
+		}
+		if(maxLis < maxEndingHere)
+			maxLis = maxEndingHere;
+		return maxEndingHere;
+	}
+	public static int fibonacci3(int n)
+	{
+		int fib[] = new int[n+1];                                                                    //Dynamic Programming - Tabulation - all values stored
+		fib[0] = 0;
+		fib[1] = 1;
+		for(int i=2; i<=n; i++)
+			fib[i] = fib[i-1] + fib[i-2];
+		return fib[n-1];
+	}
+	static int fib[];
+	public static int fibonacci2(int n)
+	{
+		fib = new int[n+1];
+		for(int i=0; i<=n; i++)
+			fib[i] = -1;
+		return fibonacci2Util(n);
+	}
+	public static int fibonacci2Util(int n)                                                             //Dynamic Programming - Memoization - on demand - not all values stored 
+	{
+		if(fib[n] == -1)
+		{
+			if(n <= 1)
+				fib[n] = n;
+			else
+				fib[n] = fibonacci2Util(n-1) + fibonacci2Util(n-2);
+		}
+		return fib[n];
+	}
+	public static int fibonacci(int n)
+	{
+		if(n <= 1)
+			return 0;
+		return fibonacci(n-1) + fibonacci(n-2);
+	}
+	public static boolean checkArraySubset2(int a[], int b[])                        //Time Complexity: O(mlogm) + O(nlogm) ; O(mlogm) for sorting; O(nlogm) for doing binary search n times
+	{
+		Arrays.sort(a);
+		for(int i=0; i<b.length; i++)
+		{
+			if(binarySearch_(a, 0, a.length-1, b[i]) == -1)
+				return false;
+		}
+		return true;
+	}
+	public static int binarySearch_(int arr[], int low, int high, int target)
+	{
+		if(low > high)
+			return -1;
+		int mid = (low + high)/2;
+		if(arr[mid] == target)
+			return 1;
+		else if(target < arr[mid])
+			return binarySearch_(arr, low, mid-1, target);
+		else
+			return binarySearch_(arr, mid+1, high, target);
+	}
+	public static boolean checkArraySubset(int a[], int b[])                  //Time Complexity: O(m * n) where m is the length of a[] and n is the length of b[]
+	{
+		int i, j;
+		for(i=0; i<b.length; i++)
+		{
+			for(j=0; j<a.length; j++)
+			{
+				if(a[j] == b[i])
+					break;
+			}
+			if(j == a.length)
+				return false;
+		}
+		return true;
+	}
+	public static int maxIndexDiff2(int arr[])                                     //Time Complexity: O(n)
+	{                                                                              //Auxiliary Space: O(n)
+		int leftMin[] = new int[arr.length];
+		int rightMax[] = new int[arr.length];
+		leftMin[0] = arr[0];
+		rightMax[arr.length-1] = arr[arr.length-1];
+		for(int i=1; i<arr.length; i++)
+			leftMin[i] = Math.min(leftMin[i-1], arr[i]);
+		for(int j=arr.length-2; j>=0; j--)
+			rightMax[j] = Math.max(rightMax[j+1], arr[j]);
+		int i=0, j=0;
+		int max = Integer.MIN_VALUE;
+		while(i < arr.length && j < arr.length)
+		{
+			if(arr[j] > arr[i])
+			{
+				if(max < (j-i))
+				    max = j - i;
+				j++;
+			}
+			else
+				i++;
+		}
+		return max;
+	}
+	public static int maxIndexDiff(int arr[])                                       //Time Complexity: O(n^2)
+	{
+		int max = Integer.MIN_VALUE;
+		for(int i=0; i<arr.length; i++)
+		{
+			for(int j=i+1; j<arr.length; j++)
+			{
+				if(arr[j] > arr[i] && (j-i) < max)
+					max = j - i;
+			}
+		}
+		return max;
+	}
+	public static int countOccurrences(int arr[], int target)
+	{
+		int firstIndex = getFirstIndex(arr, 0, arr.length-1, target);
+		if(firstIndex == -1)
+			return -1;
+		int lastIndex = getLastIndex(arr, 0, arr.length-1, target);
+		return lastIndex - firstIndex + 1;
+	}
+	public static int getFirstIndex(int arr[], int low, int high, int target)
+	{
+		if(low > high)
+			return -1;
+		int mid = (low + high)/2;
+		if(((mid == 0) || arr[mid] > arr[mid-1]) && arr[mid] == target)
+			return mid;
+		else if(target < arr[mid])
+			return getFirstIndex(arr, low, mid-1, target);
+		else
+			return getFirstIndex(arr, mid+1, high, target);
+	}
+	public static int getLastIndex(int arr[], int low, int high, int target)
+	{
+		if(low > high)
+			return -1;
+		int mid = (low + high)/2;
+		if((mid == arr.length-1) || (arr[mid] < arr[mid+1]) && arr[mid] == target)
+			return mid;
+		else if(target < arr[mid])
+			return getLastIndex(arr, low, mid-1, target);
+		else
+			return getLastIndex(arr, mid+1, high, target);
+	}
+	public static boolean checkConsecutive2(int arr[])
+	{
+		if(arr.length < 1)
+			return false;
+		int min = arr[0], max = arr[0];
+		for(int i=1; i<arr.length; i++)
+		{
+			if(arr[i] < min)
+				min = arr[i];
+			else if(arr[i] > max)
+				max = arr[i];
+		}
+		if((max - min + 1) == arr.length)
+		{
+			HashMap<Integer, Boolean> hm = new HashMap<Integer, Boolean>();
+			for(int j=0; j<arr.length; j++)
+			{
+				if(hm.containsKey(arr[j]))
+					return false;
+				hm.put(arr[j], true);
+			}
+			return true;
+		}
+		return false;	
+	}
+	public static boolean checkConsecutive(int arr[])
+	{
+		Arrays.sort(arr);
+		for(int i=0; i<arr.length-2; i++)
+		{
+			if(arr[i+1] - arr[i] != 1)
+                 return false;
+		}
+		return true;
+	}
+	public static void nextGreater2(int arr[])                                      //Time Complexity: O(n) ; Worst-case when the input is sorted in descending order.
+	{
+		Stack<Integer> st = new Stack<Integer>();
+		st.push(arr[0]);
+		int temp, nextElement;
+		for(int i=1; i<arr.length; i++)
+		{
+			nextElement = arr[i];
+			if(!st.isEmpty())
+			{
+			   temp = st.pop();
+			   while(nextElement > temp)
+			   {
+				    System.out.println("The next greater element for "+temp+" is "+nextElement);
+				    if(st.isEmpty())
+					   break;
+				    temp = st.pop();
+			   }
+			   if(nextElement < temp)
+				   st.push(temp);
+		    }
+			st.push(nextElement);
+		}
+		while(!st.isEmpty())
+		{
+			temp = st.pop();
+			System.out.println("The element "+temp+ "does not have a greater element.");
+		}
+	}
+	public static void nextGreater(int arr[])                                     //Time Complexity: O(n^2)
+	{
+		for(int i=0; i<arr.length; i++)
+		{
+			for(int j=i+1; j<arr.length; j++)
+			{
+				if(arr[j] > arr[i])
+				{
+					System.out.println("The next greater element for "+arr[i]+" is "+arr[j]);
+					break;
+				}
+			}
+		}
+	}
+	public static int equilibriumIndex2(int arr[])                              //Time Complexity: O(n)
+	{
+		int sum=0;
+		int i;
+		for(i=0; i<arr.length; i++)
+			sum += arr[i];
+		int leftSum = 0;
+		for(i=0; i<arr.length; i++)
+		{
+			sum -= arr[i];
+			if(leftSum == sum)
+				return i;
+			leftSum += arr[i];
+		}
+		return -1;
+	}
+	public static int equilibriumIndex(int arr[])                                //Time Complexity: O(n^2)
+	{
+		int j, k;
+		int leftSum, rightSum;
+		for(int i=0; i<arr.length; i++)
+		{
+			leftSum = 0;
+			rightSum = 0;
+			for(j=0; j<i; j++)
+				leftSum += arr[j];
+			for(k=i+1; k<arr.length; k++)
+				rightSum += arr[k];
+			if(leftSum == rightSum)
+				return i;
+		}
+		return -1;
+	}
+	public static void minLenUnsortedSubarray(int arr[])
+	{
+		int start, end;
+		for(start=0; start<arr.length-1; start++)
+		{
+			if(arr[start] > arr[start+1])
+			   break;
+		}
+		for(end=arr.length-1; end>0; end--)
+		{
+			if(arr[end] < arr[end-1])
+				break;
+		}
+		int max = arr[start], min = arr[start];
+		for(int i=start; i<=end; i++)
+		{
+			if(arr[i] > max)
+				max = arr[i];
+			else if(arr[i] < min)
+				min = arr[i];
+		}
+		for(int i=0; i<start; i++)
+		{
+			if(arr[i] > min)
+			{
+				start = i;
+				break;
+			}
+		}
+		for(int j=arr.length-1; j>=end+1; j--)
+		{
+			if(arr[j] < max)
+			{
+				end = j;
+				break;
+			}
+		}
+		System.out.println("The min length unsorted array is between the index: "+start+" and "+end);
+	}
+	public static int minDistance(int arr[], int num1, int num2)               //Time Complexity: O(n)
+	{
+		int i, first = -1;
+		int min = Integer.MAX_VALUE;
+		for(i=0; i<arr.length; i++)
+		{
+			if(arr[i] == num1 || arr[i] == num2)
+			{
+				first = i;
+				break;
+			}
+		}
+		for(; i<arr.length; i++)
+		{
+			if(arr[i] == num1 || arr[i] == num2)
+			{
+				if(arr[first] != arr[i] && (i-first) < min)
+				{
+					min = i - first;
+					first = i;
+				}
+				else
+					first = i;
+			}
+		}
+		return min;
+	}
+	public static int fixedPoint(int arr[], int low, int high)           //Time Complexity: O(logn)
+	{                                                                    //Algorithmic Paradigm: Divide & Conquer
+		if(low > high)
+			return -1;
+		int mid = (low + high)/2;
+		if(arr[mid] == mid)
+			return arr[mid];
+		else if(arr[mid] > mid)
+			return fixedPoint(arr, low, mid-1);
+		else
+			return fixedPoint(arr, mid+1, high);
+	}
+	public static int maxBitonicSubarray(int arr[])                       //Time Complexity: O(n)
+	{                                                                     //Auxiliary Space: O(n)
+		int increasing[] = new int[arr.length];
+		int decreasing[] = new int[arr.length];
+		increasing[0] = 1;
+		decreasing[arr.length-1] = 1;
+		for(int i=1; i<arr.length; i++)
+		{
+			if(arr[i] > arr[i-1])
+				increasing[i] = increasing[i-1] + 1;
+			else
+				increasing[i] = 1;
+		}
+		for(int j=arr.length-2; j>=0; j--)
+		{
+			if(arr[j] > arr[j+1])
+				decreasing[j] = decreasing[j+1] + 1;
+			else
+				decreasing[j] = 1;
+		}
+		int max = increasing[0] + decreasing[0] - 1;
+		for(int k = 1; k < arr.length; k++)
+		{
+			if(increasing[k] + decreasing[k] - 1 > max)
+				max = increasing[k] + decreasing[k] - 1;
+		}
+		return max;
+	}
+	public static int maxNumberIncreasingDecreasingArray(int arr[], int low, int high)        //Time Complexity: O(logn)
+	{
+		if(low == high)
+			return arr[low];
+		if(high == low+1 && arr[low] >= arr[high])
+			return arr[low];
+		if(high == low+1 && arr[high] < arr[low])
+			return arr[high];
+		int mid = (low + high)/2;
+		if(arr[mid] > arr[mid+1] && arr[mid] > arr[mid-1])
+			return arr[mid];
+		else if(arr[mid] > arr[mid+1] && arr[mid] < arr[mid-1])
+			return maxNumberIncreasingDecreasingArray(arr, low, mid-1);
+		else
+			return maxNumberIncreasingDecreasingArray(arr, mid+1, high);
+	}
+	public static int minJumps3(int arr[], int n)                 //Time Complexity: O(n^2)
+	{                                                             //Algorithmic Paradigm: Dynamic Programming
+		int jumps[] = new int[arr.length];                        //Constructing jumps[] from right to left.
+		jumps[n-1] = 0;
+		for(int i=n-2; i>=0; i--)
+		{
+			if(arr[i] == 0)
+				jumps[i] = Integer.MAX_VALUE;
+			else if(arr[i] >= n-i-1)
+				jumps[i] = 1;
+			else
+			{
+				int min = Integer.MAX_VALUE;
+				for(int j=i+1; j < n && j <= arr[i] + i; j++)
+				{
+					if(jumps[j] < min)
+						min = jumps[j];
+				}
+				if(min != Integer.MAX_VALUE)
+					jumps[i] = min + 1;
+				else
+					jumps[i] = min;
+			}
+		}
+		return jumps[0];
+	}
+	public static int minJumps2(int arr[], int n)                              //Time Complexity: O(n^2)
+	{                                                                          //Algorithmic Paradigm: Dynamic Programming
+	     if(n == 0 || arr[0] == 0)                                             //Constructing jumps[] from left to right.
+	    	 return Integer.MAX_VALUE;
+	     int jumps[] = new int[arr.length];
+	     jumps[0] = 0;
+	     for(int i=1; i<n; i++)
+	     {
+	    	 jumps[i] = Integer.MAX_VALUE;
+	    	 for(int j=0; j<i; j++)
+	    	 {
+	    		 if(i <= j+arr[j] && jumps[j] != Integer.MAX_VALUE)
+	    		 {
+	    			 jumps[i] = jumps[j] + 1;
+	    			 break;
+	    		 }
+	    	 }
+	     }
+	     return jumps[n-1];
+	}
+	public static int minJumps(int arr[], int start, int end)                        //Time Complexity: O(n^2)
+	{                                                                                //Using Recursion
+		if(start == end)
+			return 0;
+		if(arr[start] == 0)
+			return Integer.MAX_VALUE;
+		int min = Integer.MAX_VALUE;
+		for(int i=start+1; i<=end && i<=start+arr[start]; i++)
+		{
+			int jumps = minJumps(arr, i, end);
+			if(jumps != Integer.MAX_VALUE && jumps + 1< min)
+				min = jumps + 1;
+		}
+		return min;
+	}
+	public static void productArray4(int arr[])
+	{
+		int product = 1;
+		int i;
+		for(i=0; i<arr.length; i++)
+			product *= arr[i];
+		for(i=0; i<arr.length; i++)
+		{
+			arr[i] = product/arr[i];
+			System.out.println(arr[i]);
+		}
+	}
+	static int array[] = new int[]{1,2,3,4,5};
+	static int backward = 1;
+	public static void productArray3(int n, int i, int forward)
+	{
+		if(i >= n-1)
+			return;
+		forward *= array[i];
+		productArray3(n, i+1, forward);
+		int temp = array[i+1];
+		array[i+1] = forward * backward;
+		backward *= array[i+1];
+	}
+	public static void productArray2(int arr[])
+	{
+		int productArray[] = new int[arr.length];
+		int temp = 1;
+		int i;
+		for(i=0; i<arr.length; i++)
+		{
+			productArray[i] = temp;
+			temp *= arr[i];
+		}
+		temp = 1;
+		for(i=arr.length-1; i>=0; i--)
+		{
+			productArray[i] *= temp;
+			temp = arr[i];
+		}
+		for(i=0; i<productArray.length; i++)
+			System.out.println(productArray[i]);
+	}
+	public static void productArray(int arr[])
+	{
+		int leftArray[] = new int[arr.length];
+		int rightArray[] = new int[arr.length];
+		int productArray[] = new int[arr.length];
+		leftArray[0] = 1;
+		rightArray[arr.length-1] = 1;
+		for(int i=1; i<arr.length; i++)
+			leftArray[i] = arr[i-1] * leftArray[i-1];
+		for(int j=arr.length-2; j>=0; j--)
+			rightArray[j] = arr[j+1] * rightArray[j+1];
+		for(int k=0; k<arr.length; k++)
+		{
+			productArray[k] = leftArray[k] * rightArray[k];
+			System.out.println(productArray[k]);
+		}
+	}
+	public static int maxDiff4(int arr[])        //Time Complexity: O(n) 
+	{                                            //Auxiliary Space: O(1)
+		int diff = arr[1] - arr[0];
+		int currSum = diff;
+		int maxSum = currSum;
+		for(int i=1; i<arr.length-1; i++)
+		{
+			diff = arr[i+1] - arr[i];	         //currSum = Math.max(diff, currSum+diff);
+			currSum += diff;
+			if(currSum < 0)
+				currSum = diff;                  //currSum = diff and not currSum = 0 because currSum is initialized with diff.
+			if(maxSum < currSum)
+				maxSum = currSum;
+		}
+		return maxSum;
+	}
+	public static int maxDiff3(int arr[])                 //Time Complexity: O(n)
+	{                                                     //Auxiliary Space: O(n)
+		int diff[] = new int[arr.length];
+		for(int i=0; i<arr.length-1; i++)
+			diff[i] = arr[i+1] - arr[i];
+		int currSum = diff[0];
+		int maxSum = currSum;
+		for(int i=1; i<diff.length; i++)
+		{
+			currSum += diff[i];
+			if(currSum < 0)
+				currSum = diff[i];
+			if(maxSum < currSum)
+				maxSum = currSum;
+		}
+		return maxSum;
+	}
+	public static int maxDiff2(int arr[])                        ////Time Complexity: O(n)
+	{
+		int maxDiff = arr[1] - arr[0];
+		int minElement = arr[0];
+		for(int i=1; i<arr.length; i++)
+		{
+			if(arr[i] - minElement > maxDiff)
+				maxDiff = arr[i] - minElement;
+			if(arr[i] < minElement)
+				minElement = arr[i];
+		}
+		return maxDiff;
+	}
+	public static int maxDiff(int arr[])                   //Time Complexity: O(n^2)
+	{
+		int maxDiff = arr[1] - arr[0];
+		for(int i=0; i<arr.length; i++)
+		{
+			for(int j=i+1; j<arr.length; j++)
+			{
+				if(arr[j] - arr[i] > maxDiff)
+					maxDiff = arr[j] - arr[i];
+			}
+		}
+		return maxDiff;
+	}
+	//For finding min and max in an array
+	int min;
+	int max;
+	public static Array findMinMax3(int arr[])              //Time Complexity: O(n)
+	{                                                       //If n is odd: 3*(n-1)/2          
+		Array minMax = new Array();                         //If n is even: 1 + 3*(n-2)/2 = 3n/2 -2
+		int i;
+		if(arr.length % 2 == 0)
+		{
+			if(arr[0] > arr[1])
+			{
+				minMax.max = arr[0];
+				minMax.min = arr[1];
+			}
+			else
+			{
+				minMax.max = arr[1];
+				minMax.min = arr[0];
+			}
+			i = 2;
+		}
+		else
+		{
+			minMax.min = arr[0];
+			minMax.max = arr[1];
+			i = 1;
+		}
+		while(i < arr.length-1)
+		{
+			if(arr[i] < arr[i+1])
+			{
+			    if(arr[i] < minMax.min)
+			    	minMax.min = arr[i];
+			    if(arr[i+1] > minMax.max)
+			    	minMax.max = arr[i+1];
+			}
+			else
+			{
+				if(arr[i+1] < minMax.min)
+					minMax.min = arr[i+1];
+				if(arr[i] > minMax.max)
+					minMax.max = arr[i];
+			}
+			i += 2;
+		}
+		return minMax;
+	}
+	public static Array findMinMax2(int arr[], int low, int high)             //Time Complexity: O(n)
+	{                                                                         //T(n) = T(floor(n/2)) + T(ceil(n/2)) + 2 
+		Array minMax = new Array();											  //T(2) = 1
+		if(high == low)														  //T(1) = 0																																																																																			
+		{                                                                     //If n is a power of 2, T(n) = 2T(n/2) + 2
+			minMax.min = arr[0];                                              //After solving above recursion, T(n)  = 3/2n -2 
+			minMax.max = arr[0];                                              //So (3/2n - 2) comparisons if n is a power of 2. More than that if not a power of 2.
+			return minMax;
+		}
+		if(high == low+1)
+		{
+			if(arr[0] < arr[1])
+			{
+				minMax.min = arr[0];
+				minMax.max = arr[1];
+			}
+			else
+			{
+				minMax.min = arr[1];
+				minMax.max = arr[0];
+			}
+			return minMax;
+		}
+		int mid = (low + high)/2;
+		Array minMaxLeft = findMinMax2(arr, low, mid);
+		Array minMaxRight = findMinMax2(arr, mid+1, high);
+		if(minMaxLeft.min < minMaxRight.min)
+		     minMax.min = minMaxLeft.min;
+		else
+			minMax.min = minMaxRight.min;
+		if(minMaxLeft.max > minMaxRight.max)
+			minMax.max = minMaxLeft.max;
+		else
+			minMax.max = minMaxRight.max;
+		return minMax;
+	}
+	public static Array findMinMax(int arr[])      //Time Complexity: O(n)
+	{                                              // No of Comparisons: 1 + 2(n-2) in worst case --> descending order. 1 + (n-2) in best case --> ascending order
+		Array a = new Array();
+		if(arr.length == 1)
+		{
+			a.min = arr[0];
+			a.max = arr[0];
+			return a;
+		}                                     
+		if(arr[0] < arr[1])                        
+		{
+			a.min = arr[0];
+			a.max = arr[1];
+		}
+		else
+		{
+			a.min = arr[1];
+			a.max = arr[0];
+		}
+		for(int i=2; i<arr.length; i++)
+		{
+			if(arr[i] < a.min)
+				a.min = arr[i];
+			else if(arr[i] > a.max)
+				a.max = arr[i];
+		}
+		return a;
+	}
+	public static void intersection(int arr1[], int arr2[])      //Time Complexity: O(m+n)
+	{                                                            //Input: Sorted Arrays
+		int i=0, j=0;                                            //For unsorted arrays, use HashSet
+		while(i < arr1.length && j < arr2.length)
+		{
+			if(arr1[i] < arr2[j])
+				i++;
+			else if(arr2[j] < arr1[i])
+				j++;
+			else
+			{
+				System.out.println(arr1[i++]);
+				j++;
+			}
+		}
+	}
+	public static void union(int arr1[], int arr2[])              //Time Complexity: O(m+n)
+	{                                                             //Input: Sorted Arrays
+		int i=0, j=0;                                             //For unsorted arrays, use HashSet
+		while(i < arr1.length && j < arr2.length)
+		{
+			if(arr1[i] < arr2[j])
+				System.out.println(arr1[i++]);
+			else if(arr2[j] < arr1[i])
+				System.out.println(arr2[j++]);
+			else
+			{
+				System.out.println(arr1[i++]);
+				j++;
+			}
+		}
+		while(i < arr1.length)
+			System.out.println(arr1[i++]);
+		while(j < arr2.length)
+			System.out.println(arr2[j++]);
+	}
+	public static void findTwoMinNum(int arr[])
+	{
+		int firstMin = Integer.MAX_VALUE;
+		int secondMin = Integer.MAX_VALUE;
+		for(int i=0; i<arr.length; i++)
+		{
+			if(arr[i] < firstMin)
+			{
+				secondMin = firstMin;
+				firstMin = arr[i];
+			}
+			else if(arr[i] < secondMin && arr[i] != firstMin)
+				secondMin = arr[i];
+		}
+		if(secondMin == Integer.MAX_VALUE)
+			System.out.println("First Min Number: "+firstMin+" Second Min Number does not exist!");
+		else if(firstMin == Integer.MAX_VALUE && secondMin == Integer.MAX_VALUE)
+			System.out.println("There are no elements in the array! ");
+		else
+			System.out.println("First Min Number: "+firstMin+" Second Min Number: "+secondMin);
+	}
+	public static void findMajorityElement(int arr[])
+	{
+		int candidate = findCandidate(arr);
+		if(isMajority(arr, candidate))
+		    System.out.println("Majority Element is: "+candidate);
+		else
+			System.out.println("No Majority Element!");
+	}
+	public static int findCandidate(int arr[])
+	{
+		int majorityIndex = 0;
+		int count = 1;
+		for(int i=1; i<arr.length; i++)
+		{
+			if(arr[i] == arr[majorityIndex])
+				count++;
+			else
+				count--;
+			if(count == 0)
+			{
+				majorityIndex = i;
+				count = 1;
+			}
+		}
+		return arr[majorityIndex];
+	}
+	public static boolean isMajority(int arr[], int candidate)
+	{
+		int count = 0;
+		for(int i=0; i<arr.length; i++)
+		{
+			if(arr[i] == candidate)
+			{
+				count++;
+				if(count > arr.length/2)
+					return true;
+			}
+		}
+		return false;
+	}
+	public static void pairClosestToZero2(int arr[])         //Time Complexity: O(nlogn) + O(n) = O(nlogn) 
+	{
+		if(arr.length < 2)
+			System.out.println("Invalid!");
+		Arrays.sort(arr);
+		int minSum = Integer.MAX_VALUE; 
+		int minFirst = 0, minSecond = arr.length-1;
+		int left = 0, right = arr.length-1;
+		int sum;                                         
+		while(left < right)
+		{
+			sum = arr[left] + arr[right];
+			if(Math.abs(sum) < Math.abs(minSum))                   //remember to use abs value
+			{
+				minSum = sum;
+				minFirst = left;
+				minSecond = right;
+			}
+			if(sum < 0)
+				left++;
+			else
+				right--;
+		}
+		System.out.println("Pair Closest to Zero found: "+arr[minFirst]+","+arr[minSecond]+" Sum: "+minSum);
+	}
+	public static void pairClosestToZero(int arr[])          //Time Complexity: O(n^2)               
+	{
+		if(arr.length < 2)
+			System.out.println("Invalid!");
+		int minSum = Integer.MAX_VALUE;
+		int sum;                                           //No need to initialize sum = arr[0] + arr[1]  because if the there are two elements, for loop will anyway be executed.
+		int minFirst = 0, minSecond = 1;                   //If only 2 elements are present, then they form the closest pair to zero
+		for(int i=0; i<arr.length-1; i++)
+		{
+			for(int j=i+1; j<arr.length; j++)
+			{
+				sum = arr[i] + arr[j];
+				if(Math.abs(sum) < Math.abs(minSum))         //remember to use abs value
+				{
+					minSum = sum;
+					minFirst = i;
+					minSecond = j;
+				}
+			}
+		}
+		System.out.println("Pair Closest to Zero found: "+arr[minFirst]+","+arr[minSecond]+" Sum: "+minSum);
+	}
+	public static int mergeSort(int arr[], int left, int right)      //Time Complexity: O(nlogn)
+	{                                                                //has problems with (mid - i)
+		int inversionCount = 0;	
+		if(right > left)
+		{
+			int mid = (left + right)/2;
+			inversionCount = mergeSort(arr, left, mid);
+			inversionCount += mergeSort(arr, mid+1, right);
+			inversionCount += merge(arr, left, mid+1, right);
+		}
+		return inversionCount;
+	}
+	public static int merge(int[] arr, int left, int mid, int right)
+	{
+		int i = left, j = mid, k = left;
+		int invCount = 0;
+		int temp[] = new int[arr.length];
+		while(i <= mid-1 && j <= right)
+		{
+			if(arr[i] <= arr[j])
+			{
+				temp[k++] = arr[i++];
+			}
+			else
+			{
+				temp[k++] = arr[j++];
+				invCount += (mid - i);
+			}
+		}
+		while(i <= mid-1)
+			temp[k++] = arr[i++];
+		while(j <= right)
+			temp[k++] = arr[j++];
+		return invCount;
+	}
+	public static void inversionCount(int arr[])            //Time Complexity: O(n^2) 
+	{
+		int inversionCount = 0;
+		for(int i=0; i<arr.length; i++)
+			for(int j = i+1; j<arr.length; j++)
+				if(arr[j] < arr[i])
+					inversionCount++;
+		System.out.println("The Inversion Count is: "+inversionCount);
+	}
+	public static void findLeaders2(int arr[])              //Time Complexity: O(n) 
+	{
+		int leader = Integer.MIN_VALUE;
+		for(int i=arr.length-1; i>=0; i--)
+		{
+			if(arr[i] > leader)
+			{
+				leader = arr[i];
+				System.out.println("Leader: "+leader);
+			}
+		}
+	}
+	public static void findLeaders(int arr[])              //Time Complexity: O(n^2) 
+	{
+		int j;
+		for(int i=0; i<arr.length; i++)
+		{
+			for(j=i+1; j<arr.length; j++)
+			{
+				if(arr[j] > arr[i])
+					break;
+			}
+			if(j == arr.length)
+				System.out.println("Leader: "+arr[i]);
+		}
+	}
+	public static int maxSumNotAdjacent3(int arr[])               //Check Time Complexity - is it more than O(n) ?
+	{ 
+		int sum = 0, i = 0, size = arr.length;                     //Dynamic Programming - Using Recursion
+		return maxSumNotAdjacent3Util(arr, sum, i, size);
+	}
+	public static int maxSumNotAdjacent3Util(int arr[], int sum, int i, int size)
+	{
+		if(i > size-1)
+			return sum;
+		return (Math.max(maxSumNotAdjacent3Util(arr, sum+arr[i], i+2, size), maxSumNotAdjacent3Util(arr, sum, i+1, size)));
+	}
+	public static int maxSumNotAdjacent2(int arr[])
+	{                                                          
+		int[] sum = new int[arr.length];                     //Dynamic Programming
+		sum[0] = arr[0];
+		sum[1] = Math.max(arr[0], arr[1]);                   //check for all negative numbers. Shows some value. 
+		for(int i=2; i<arr.length; i++)                      //check for {-3,-2,4,1,-5}. It shows 1. Should have been 4. Other method shows 4.
+		{
+			sum[i] = Math.max(sum[i-1], sum[i-2]+arr[i]);    //Can use 3 variables to hold values instead of an array. we need just the prev two values and current sum. a = b; b = currSum;
+		}
+		return sum[sum.length-1];
+	}
+	public static int maxSumNotAdjacent(int arr[])
+	{
+		int incl = arr[0];
+		int excl = 0;                                       // This method shows 0 for all neg.
+		int exclNew;
+		for(int i=1; i<arr.length; i++)
+		{
+			exclNew = Math.max(excl, incl);
+			incl = excl + arr[i];
+			excl = exclNew;
+		}
+		return Math.max(incl, excl);
+	}
+	public static int sortedArrayMedian3(int[] arr1, int[] arr2, int left, int right, int n)   
+	{                                                                          //Time Complexity: O(logn)
+		if(left > right)                                                       //Algorithmic Paradigm: Divide and Conquer
+			return sortedArrayMedian3(arr2, arr1, 0, n-1, n);
+		int i = (left + right)/2;
+		int j = n - i - 1;
+		if(arr1[i] > arr2[j] && ((j == n-1) || (arr1[i] <= arr2[j+1])))
+		{
+			if((i == 0) || arr2[j] > arr1[i-1])
+				return (arr1[i] + arr2[j])/2;
+			else
+				return (arr1[i] + arr1[i-1])/2;
+		}
+		else if(arr1[i] > arr2[j] && j != n-1 && arr1[i] > arr2[j+1])
+			return sortedArrayMedian3(arr1, arr2, left, i-1, n);
+		else
+			return sortedArrayMedian3(arr1, arr2, i+1, right, n);
+	}
+	public static int sortedArrayMedian2(int[] arr1, int[] arr2)       // Time Complexity: O(logn)  
+	{                                                                  //Algorithmic Paradigm: Divide and Conquer
+		int i = 0, j = 0;	
+		int n = arr1.length;
+		return sortedArrayMedian2Util(arr1, arr2, i, j, n);
+	}
+	public static int sortedArrayMedian2Util(int[] arr1, int[] arr2, int i, int j, int n)
+	{
+		if(n <= 0)
+			return -1;
+		if(n == 1)
+			return (arr1[i] + arr2[j])/2;
+		if(n == 2){
+			//System.out.println("n == 2 ---- i val = "+i+" j val = "+j);
+			return (Math.max(arr1[i], arr2[j]) + Math.min(arr1[i + 1], arr2[j + 1]))/2;
+		}
+	    int m1 = getMedian(arr1, i, n);
+		int m2 = getMedian(arr2, j, n);
+		if(m1 == m2)
+			return m1;
+		if(m1 > m2)
+		{
+			if(n % 2 == 0){
+				//System.out.println("m1 > m2, n even ---- m1 val = "+m1+" m2 val = "+m2+" n = "+n+" i val = "+i+ "j val = "+j);
+				return sortedArrayMedian2Util(arr1, arr2, i, j + (n/2 - 1), n - n/2 + 1);
+			}
+			else{
+				//System.out.println("m1 > m2, n odd ---- m1 val = "+m1+" m2 val = "+m2+" n = "+n+" i val = "+i+ "j val = "+j);
+				return sortedArrayMedian2Util(arr1, arr2, i, j + (n/2), n - n/2);
+			}
+		}
+		else
+		{
+			if(n % 2 == 0){
+				//System.out.println("m2 > m1, n even ---- m1 val = "+m1+" m2 val = "+m2+" n = "+n+" i val = "+i+ "j val = "+j);
+				return sortedArrayMedian2Util(arr1, arr2, i + (n/2 - 1), j, n - n/2 + 1);
+			}
+			else{
+				//System.out.println("m2 > m1, n odd ---- m1 val = "+m1+" m2 val = "+m2+" n = "+n+" i val = "+i+ "j val = "+j);
+				return sortedArrayMedian2Util(arr1, arr2, i + (n/2), j, n - n/2);
+			}
+		}
+	}
+	public static int getMedian(int arr[], int start, int n)
+	{
+		if(n % 2 == 0)
+			return (arr[start + (n/2)] + arr[start + (n/2 - 1)])/2;
+		else
+			return arr[start + (n/2)];
+	}
+	public static void sortedArrayMedian(int[] arr1, int[] arr2)   //Time Complexity: O(n)
+	{
+		int m1 = -1, m2 = -1;
+		int n = arr1.length;
+		int i = 0, j = 0;
+		for(int count = 0; count <= n; count++)
+		{
+			if(i == n)
+			{
+				m1 = m2;
+				m2 = arr2[0];
+				break;
+			}
+			else if(j == n)
+			{
+				m1 = m2;
+				m2 = arr1[0];
+				break;
+			}
+			if(arr1[i] < arr2[j])
+			{
+				m1 = m2;
+				m2 = arr1[i];
+				i++;
+			}
+			else
+			{
+				m1 = m2;
+				m2 = arr2[j];
+				j++;
+			}
+		}
+		int result = (m1 + m2)/2;
+		System.out.println("The median of the two sorted arrays: "+result);
+	}
+	public static void rowWithMaxOnes2(int[][] arr)     //Time Complexity: O(m+n)   - verify
+	{
+		int row = arr.length;
+		int col = arr[0].length;
+		int rowIndex = -1;
+		int oneIndex = col;   
+		int j;     
+		for(int i=0; i<row; i++)                 //For first row, can use binary search.
+		{
+			if(oneIndex == 0)
+				break;
+			if(arr[i][oneIndex-1] == 1)
+			{
+				j = oneIndex - 1;
+				while((j >= 0) && (arr[i][j] == 1))
+					j--;
+				oneIndex = j + 1;
+				rowIndex = i;
+			}
+		}
+		System.out.println("The row with Max 1s is:"+rowIndex);
+	}
+	public static void rowWithMaxOnes(int[][] arr)      //Time Complexity: O(mlogn) (worst case) but will perform better on average
+	{
+		int row = arr.length;
+		int col = arr[0].length;
+		int rowIndex;
+		int oneIndex = findFirstOne(arr[0], 0, col-1);		
+		if(oneIndex == -1)
+		{
+			rowIndex = -1;
+			oneIndex = col; 
+		}
+		else
+			rowIndex = 0;
+		for(int i=1; i<row; i++)
+		{
+			if(oneIndex == 0)
+				break;
+			if(arr[i][oneIndex-1] == 1)                          //or add (oneIndex !=0) here 
+			{
+			    oneIndex = findFirstOne(arr[i], 0, oneIndex - 1);
+	     		rowIndex = i;			
+			}
+		}
+		System.out.println("The row with max 1s is: "+rowIndex);
+	}
+	public static int findFirstOne(int arr[], int low, int high)         
+	{
+		if(high >= low)
+		{
+			int mid = low + (high - low)/2;
+			if((mid == 0 || arr[mid-1] == 0) && arr[mid] == 1)
+				return mid;
+			else if(arr[mid] == 0)
+				return findFirstOne(arr, mid+1, high);       //Don't forget to 'return'. 
+			else
+				return findFirstOne(arr, low, mid-1);
+		}
+		return -1;
+	}
+	public static void rotateImage2(int[][] arr)
+	{
+		int row = arr.length;                        //Using Extra space - copying into another matrix
+		int col = arr[0].length;
+		int[][] result = new int[row][col];
+		for(int i=0; i<row; i++)
+		{
+			for(int j=0; j<col; j++)
+			{
+				result[j][row-1-i] = arr[i][j];
+			}
+		}
+		for(int i=0; i<row; i++){
+			for(int j=0; j<col; j++)
+				System.out.print(result[i][j]+" ");
+			System.out.println();
+		}
+	}
+	public static void rotateImage(int[][] arr)          //rotating in-place
+	{
+		int n = arr.length;
+		int first, last, top, offset;
+		for(int layer = 0; layer<n/2; layer++)
+		{
+			first = layer;
+			last = (n-1)-layer;
+			for(int i=first; i<last; i++)
+			{
+				offset = i - first;                                         //offset is for running through a row of column ?
+				top = arr[first][i];
+				arr[first][i] = arr[last - offset][first];                  //left to top
+				arr[last - offset][first] = arr[last][last - offset];       //bottom to left
+				arr[last][last - offset] = arr[i][last];                    //right to bottom
+				arr[i][last] = top;                                         //top to right
+			}
+		}
+		for(int i=0; i<n; i++){
+			for(int j=0; j<n; j++)
+				System.out.print(arr[i][j]+" ");
+			System.out.println();
+		}
+	}
+	public static void searchMatrix(int[][] arr, int target)  //Time Complexity: O(n)
+	{                                                         // n*n matrix
+		int i = 0;                                            //2*n comparisons  
+		int j = arr.length - 1;
+		while(i < arr.length && j >= 0)
+		{
+			if(arr[i][j] == target)
+			{
+				System.out.println("Found element at: "+i+","+j);
+				return;
+			}
+			if(target > arr[i][j])
+				i++;
+			else
+				j--;
+		}
+		System.out.println("Element not found!");
+	}
+	public static void spiral(int arr[][])
+	{
+		int i;
+		int rowStart = 0, colStart = 0;
+		int rowEnd = arr.length, colEnd = arr[0].length;
+		while(rowStart < rowEnd && colStart < colEnd)
+		{
+			for(i=colStart; i<colEnd; i++)
+			   System.out.println(arr[rowStart][i]);
+			rowStart++;
+			for(i=rowStart; i<rowEnd; i++)
+				System.out.println(arr[i][colEnd-1]);
+			colEnd--;
+			if(rowStart < rowEnd)
+			{
+			    for(i=colEnd-1; i>=colStart; i--)
+			    	System.out.println(arr[rowEnd-1][i]);
+			    rowEnd--;
+		    }
+			if(colStart < colEnd)
+			{
+				for(i=rowEnd-1; i>= rowStart; i--)
+					System.out.println(arr[i][colStart]);
+				colStart++;
+			}
+		}
+	}
+	public static void maxSumRectange(int arr[][])  //Time Complexity: O(n^3) 
+	{
+		int[] temp;
+		int row = arr.length;
+		int col = arr[0].length;
+		int maxSum = 0, sum, rectLeft = 0, rectRight = 0, rectTop = 0, rectBottom = 0;
+		for(int left = 0; left<col; left++)
+		{
+			temp = new int[row];
+			for(int right = left; right<col; right++)
+			{
+				for(int i=0; i<row; i++)
+					temp[i] += arr[i][right];
+				sum = kadane(temp);
+				if(sum > maxSum)
+				{
+					maxSum = sum;
+					rectLeft = left;
+					rectRight = right;
+					rectTop = start;
+					rectBottom = end;
+				}
+			}
+		}
+		System.out.println("The max Sum is:"+ maxSum);
+		for(int i=rectTop; i<=rectBottom; i++)
+		{
+			for(int j=rectLeft; j<=rectRight; j++)
+				System.out.print(arr[i][j]+" ");
+			System.out.println();
+		}
+	}
+	static int start, end;
+	public static int kadane(int arr[])
+	{
+		int currSum = 0;
+		int maxSumSoFar = Integer.MIN_VALUE;
+		start = 0; 
+		end = -1;
+		for(int i=0; i<arr.length; i++)
+		{
+			currSum += arr[i];
+			if(currSum < 0)
+			{
+				currSum = 0;
+				start = i+1;
+			}
+			else if(maxSumSoFar < currSum)
+			{
+				maxSumSoFar = currSum;
+				end = i;
+			}
+		}
+			if(end != -1)
+				return maxSumSoFar;
+			int max = arr[0];
+			end = 0;
+			for(int i=1; i<arr.length; i++)
+			{
+				if(max < arr[i])
+				{
+					max = arr[i];
+					start = end = i;
+			    }
+		    }
+			return max;
+	}
+	public static void kadane2(int arr[])            //not giving correct ans for all testcases. trying to set start and end with all negative array
+	{
+		int currSum = arr[0];
+		int mystart = 0, myend = 0;
+		int maxSoFar = Integer.MIN_VALUE;
+		for(int i=1; i<arr.length; i++)
+		{                                       //3,1,5,-4
+			if(arr[i] > currSum+arr[i])
+		    {
+				currSum = 0;
+				mystart = i+1;
+		    }
+			else
+				currSum += arr[i];
+			if(maxSoFar < currSum)
+			{
+				maxSoFar = currSum;
+				myend = i;
+			}
+		}
+		//return maxSoFar;
+		//System.out.println(maxSoFar);
+	}
+	public static void arrayReversal3(int[] arr, int d)  //Time Complexity: O(n)
+	{
+		reverseArray(arr, 0, d-1);
+		reverseArray(arr, d, arr.length-1);
+		reverseArray(arr, 0, arr.length-1);
+	}
+	public static void arrayReversal2(int[] arr, int d, int i) //Time Complexity: O(n)  
+	{                                                          //Will do reversal on the opposite side. {1,2,3,4,5} and d=2 will give {4,5,1,2,3}. To change the reversal side, use d = (arr.length-d)
+		if(i == arr.length)
+			return;
+		int val = arr[i];	
+		arrayReversal2(arr, d, i+1);
+		arr[(arr.length+d+i)%arr.length] = val;
+	}
+	public static void arrayReversal(int[] arr, int d)
+	{
+		int temp, j, k;
+		//int count = 0;
+		int gcdVal = gcd(d, arr.length);
+		for(int i=0; i<gcdVal; i++)
+		{                                 // for d = 3, for loop is executed only once since gcd(3,7)=1
+			//count++;                      // 1,2,3,4,5,6,7
+			temp = arr[i];                // 4,2,3,4,5,6,7
+			j = i;                        // 4,2,3,7,5,6,7 
+			while(true)                   // 4,2,3,7,5,6,3 
+			{                             // 4,2,6,7,5,6,3
+				k = j + d;                // 4,2,6,7,5,2,3
+				if(k >= arr.length)       // 4,5,6,7,5,2,3
+					k = k - arr.length;   // break
+				if(k == i)                // 4,5,6,7,1,2,3
+					break;
+				arr[j] = arr[k];
+				j = k;
+			}
+			arr[j] = temp;
+		}
+		for(int i=0; i<arr.length; i++)
+			System.out.println(arr[i]);
+		//System.out.println("Count value:"+count);
+	}
+	public static int gcd(int a, int b)
+	{
+		if(b == 0)
+			return a;
+		return gcd(b, a%b);
+	}
+	public static void reverseArray(int[] arr, int left, int right)
+	{
+		int temp;
+		while(left < right)
+		{
+			temp = arr[left];
+			arr[left] = arr[right];
+			arr[right] = temp;
+			left++;
+			right--;
+		}
+		//for(int i=0; i<arr.length; i++)
+			//System.out.println(arr[i]);
+	}
+	public static void reverseArrayRecursive(int[] arr, int left, int right)
+	{
+		int temp;
+		if(right < left)
+			return;
+		temp = arr[left];
+		arr[left] = arr[right];
+		arr[right] = temp;
+		reverseArrayRecursive(arr, left+1, right-1);
+	}
+	public static int searchRotatedArray(int[] arr, int target)    //Time Complexity: O(logn)
+	{
+		int pivot = findPivotRotated(arr, 0, arr.length-1);
+		if(pivot == -1)
+			return binarySearch(arr, target, 0, arr.length-1);
+		if(target >= arr[0])                                   //if you do not give >= you will miss the first element if thats the target
+			return binarySearch(arr, target, 0, pivot);
+		return binarySearch(arr, target, pivot+1, arr.length-1);
+	}
+	public static int findPivotRotated(int[] arr, int low, int high)
+	{
+		if(high < low)
+			return -1;
+		if(high == low)
+			return low;
+		int mid = low + (high-low)/2;
+		if(mid < high && arr[mid] > arr[mid+1])
+			return mid;
+		if(mid > low && arr[mid-1] > arr[mid])
+			return mid-1;
+		if(arr[low] < arr[mid])
+			return findPivotRotated(arr, mid+1, high);
+		return findPivotRotated(arr, low, mid-1);
+	}
+	public static int binarySearch(int[] arr, int target, int low, int high)
+	{
+		if(high < low)
+			return -1;
+		int mid = low + (high-low)/2;
+		if(arr[mid] == target)
+			return mid;
+		if(target > arr[mid])
+			return binarySearch(arr, target, mid+1, high);
+		return binarySearch(arr, target, low, mid-1);
+	}
+	public static int binarySearchIterative1(int[] arr, int target)
+	{
+		int low = 0;
+		int high = arr.length-1;
+		int mid;
+		while(low <= high)
+		{
+			mid = low + (high-low)/2;
+			if(target == arr[mid])
+				return mid;
+			if(target > arr[mid])
+				low = mid+1;
+			else
+				high = mid-1;
+		}
+		return -1;		
+	}
+	public static int binarySearchIterative2(int[] arr, int target)   //check
+	{
+		int low = 0;
+		int high = arr.length-1;
+		int mid;
+		while((high-low) > 1)
+		{
+			mid = low + (high-low)/2;
+			if(target >= arr[mid])
+				low = mid;
+			else
+				high = mid;
+		}
+		if(target == arr[low])
+			return low;
+		else
+			return -1;
+	}
+	public static int findMinRotatedWithDup(int[] arr, int low, int high)   //Time Complexity: O(n) when the extra if condition gets through
+	{
+		if(high < low)
+			return arr[0];
+		if(high == low)
+			return arr[low];
+		int mid = low + (high-low)/2;
+		if(mid < high && arr[mid] > arr[mid+1])
+			return arr[mid+1];
+		if(mid > low && arr[mid-1] > arr[mid])
+			return arr[mid];
+		if(arr[low] == arr[mid] || arr[high] == arr[mid])       //Using && does not give correct results for {3,3,3,3,3,3,1,2,2,2}. || should be fine. Time Complexity will be O(n) when this if condition gets through.
+			return Math.min(findMinRotatedWithDup(arr, low, mid-1), findMinRotatedWithDup(arr, mid+1, high));
+		if(arr[high] > arr[mid])
+			return findMinRotatedWithDup(arr, low, mid-1);
+		return findMinRotatedWithDup(arr, mid+1, high);
+	}
+	public static int findMinRotated(int[] arr, int left, int right)    //Time Complexity: O(logn)
+	{
+		if(right < left)
+			return arr[0];
+		if(left == right)
+			return arr[left];
+		int mid = left + (right-left)/2;
+		if(mid < right && arr[mid] > arr[mid+1])
+			return arr[mid+1];
+		if(mid > left && arr[mid-1] > arr[mid])
+			return arr[mid];
+		if(arr[right] > arr[mid])
+			return findMinRotated(arr, left, mid-1);
+		return findMinRotated(arr, mid+1, right);
+	}
+	public static void segregate012(int[] arr)       //Dutch National Flag Problem
+	{
+		int left = 0;
+		int mid = 0;
+		int right = arr.length-1;
+		int temp;
+		while(mid <= right)                 //note: <=
+		{
+			while(arr[right] == 2 && right >= mid)
+				right--;
+			if(right < mid)
+				break;
+			switch(arr[mid])
+			{
+			case 0: 
+				temp = arr[mid];
+				arr[mid] = arr[left];
+				arr[left] = temp;
+				left++;
+				mid++;
+			    break;
+			case 1:
+				mid++;
+				break;
+			case 2:
+				temp = arr[right];
+				arr[right] = arr[mid];
+				arr[mid] = temp;
+				right--;
+				break;
+			}
+		}
+		for(int i=0; i<arr.length; i++)
+			System.out.println(arr[i]);
+	}
+	public static void moveZeroesToEnd(int[] arr)           //Method for pushing 0s or 1s to the end of the array that can have any numbers. can be used for segregating 01 array also.
+	{
+		int count = 0;
+		for(int i=0; i<arr.length; i++)
+		{
+			if(arr[i] != 0)
+				arr[count++] = arr[i];
+		}
+		while(count < arr.length)
+			arr[count++] = 0;
+		for(int i=0; i<arr.length; i++)
+			System.out.println(arr[i]);
+	}
+	public static void segregateEvenOdd(int[] arr)
+	{
+		int left = 0;
+		int right = arr.length-1;
+		int temp;
+		while(left < right)
+		{
+			while(arr[left]%2 == 0 && left < right)
+				left++;
+			while(arr[right]%2 == 1 && left < right)
+				right--;
+			if(left < right)
+			{
+				temp = arr[left];
+				arr[left] = arr[right];
+				arr[right] = temp;
+				left++;
+				right--;
+			}
+		}
+		for(int i=0; i<arr.length; i++)
+			System.out.println(arr[i]);
+	}
+	public static void segregate01(int[] arr)
+	{
+		int left = 0;
+		int temp;
+		int right = arr.length-1;
+		while(left < right)
+		{
+			while(arr[left] == 0 && left < right)
+				left++;
+			while(arr[right] == 1 && left < right)
+				right--;
+			if(left < right)
+			{
+				temp = arr[left];
+				arr[left] = arr[right];
+				arr[right] = temp;
+				left++;
+				right--;
+			}
+		}
+		for(int i=0; i<arr.length; i++)
+			System.out.println(arr[i]);
+	}
+	public static void findZeroSubarray(int[] arr)                 //Time Complexity: O(n)
+	{
+		int sum = 0;
+		HashMap<Integer, Integer> hm = new HashMap<Integer, Integer>();
+		for(int i=0; i<arr.length; i++)
+		{
+			sum += arr[i];
+			if(arr[i] == 0)
+			{
+				System.out.println("Zero subarray found between:"+i+","+i);
+				return;
+			}
+			if(sum == 0)
+			{
+				System.out.println("Zero subarray found between:"+0+","+i);
+				return;
+			}
+			if(hm.get(sum) != null)
+			{
+				System.out.println("Subarray found between:"+(hm.get(sum)+1)+","+i);
+				return;
+			}
+			hm.put(sum, i);
+		}
+		System.out.println("No zero subarray found!");
+	}
+	public static void findSubarraySum2(int[] arr, int target)          //Time Complexity: O(n2)
+	{
+		int sum;
+		for(int i=0; i<arr.length; i++)
+		{
+			sum = arr[i];
+			for(int j=i+1; j<=arr.length; j++)
+			{
+				if(sum == target)
+				{
+					System.out.println("Subarray found between:"+i+","+(j-1));
+					return;
+				}
+				if(sum > target || j==arr.length)                //will not work for {2,-2,5} target=0 because we are breaking after adding arr[0]=2 since it is greater than 0.
+					break;
+				sum += arr[j];
+			}
+		}
+		System.out.println("Subarray not found!");
+	}
+	public static void findSubarraySum(int[] arr, int target)            //Time Complexity: O(n)
+	{
+		int sum = arr[0];
+		int start = 0;
+		for(int i=1; i<=arr.length; i++)
+		{
+			while(sum > target && start < i-1)
+			{
+				sum -= arr[start];
+				start++;
+			}
+			if(sum == target)
+			{
+				System.out.println("Subarray found between:"+start+","+(i-1));
+				return;
+			}
+			if(i < arr.length)
+				sum += arr[i];
+		}
+		System.out.println("Subarray not found!");
+	}
+	public static void maxSubMatrix(int[][] mat, int rowSize, int colSize)    //Time Complexity: O(m*n)   m is the num of rows, n is the num of cols.
+	{
+	     int[][] submatrix = new int[rowSize][colSize];	
+		for(int i=0; i<rowSize; i++)
+			submatrix[i][0] = mat[i][0];
+		for(int i=0; i<colSize; i++)
+			submatrix[0][i] = mat[0][i];
+		for(int i=1; i<rowSize; i++)
+		{
+			for(int j=1; j<colSize; j++)
+			{
+				if(mat[i][j] == 1)
+					submatrix[i][j] = min(submatrix[i][j-1], submatrix[i-1][j], submatrix[i-1][j-1]);
+				else
+					submatrix[i][j] = 0;
+			}
+		}
+		int max = 0;
+		int rowIndex = 0, colIndex = 0;
+		for(int i=0; i<rowSize; i++)
+		{
+			for(int j=0; j<colSize; j++)
+			{
+				if(max < submatrix[i][j])
+				{
+					max = submatrix[i][j];
+					rowIndex = i;
+					colIndex = j;
+				}
+			}
+		}
+		for(int i=rowIndex; i>rowIndex-max; i--)
+		{
+			for(int j=colIndex; j>colIndex-max; j--)
+				System.out.println(submatrix[i][j]);
+		}
+	}
+	public static int min(int a, int b, int c)
+	{
+		int temp = (a < b)? a: b;
+		return (temp < c)? temp: c;
+	}
+	public static void maxDifferencePair2(int[] arr)    //Time Complexity: O(n)
+	{                                         
+		int min = arr[0], maxDiff = 0, num1 = 0;
+		for(int i=0; i<arr.length-1; i++)
+		{
+			if(arr[i+1] < min)                          // Since we are considering the possibility that arr[i+1] may be min, this will give the maxdiff when min is on the right side or on the left side, but not when the given condition is to find maxdiff only for scenarios where min is on the left side.
+				min = arr[i+1];
+			if(Math.abs(arr[i] - min) > maxDiff)
+			{
+				maxDiff = Math.abs(arr[i] - min);
+				num1 = arr[i];
+			}
+			else if((Math.abs(arr[i+1] - min) > maxDiff))
+			{
+			     maxDiff = Math.abs(arr[i+1] - min);
+			     num1 = arr[i+1];
+			}
+		}
+		System.out.println("The pair is:"+num1+","+min+" The max diff is:"+maxDiff);
+	}
+	public static void maxDifferencePair(int[] arr)     //Time Complexity: O(n2)
+	{
+		int maxDiff = 0, num1 = 0, num2 = 0;
+		for(int i=0; i<arr.length-1; i++)
+		{ 	
+			for(int j=i+1; j<arr.length; j++)
+			{
+				if(Math.abs(arr[j] - arr[i]) > maxDiff)
+				{
+					maxDiff = Math.abs(arr[j] - arr[i]);
+					num1 = arr[i];
+					num2 = arr[j];
+				}
+			}
+		}
+	  System.out.println("The pair is:"+num1+","+num2+" The max diff is:"+maxDiff);
+	}
+	public static int findMissingNum(int[] arr)
+	{
+		int x1 = 0, x2 = 0;
+		for(int i = 0; i< arr.length; i++)
+			x1 ^= arr[i];
+		for(int j = 1; j<=arr.length+1; j++)
+			x2 ^= j;
+		return x2 ^ x1;
+	}
+  public static int findOddOccurrenceNum(int[] arr)
+  {
+	  int res = 0;
+	  for(int i=0; i<arr.length; i++)
+		  res ^= arr[i];
+	  return res;
+  }
+  public static void findPair2(int[] arr, int sum)
+  {
+	  HashSet<Integer> hs = new HashSet<Integer>();;
+	  int temp;
+	  for(int i=0; i<arr.length; i++)
+	  {	  
+		  temp = sum - arr[i];
+		  if(hs.contains(temp)){
+			  System.out.println("Pair is:"+ arr[i] +","+temp);
+			  //return;   //For printing only one pair
+		  }
+		  else
+			  hs.add(arr[i]);
+	  }
+  }
+  public static void findPair(int[] arr, int sum)
+  {
+	  int start = 0, end = arr.length-1, temp;
+	  while(start < end)
+	  {
+		  temp = arr[start] + arr[end];
+		  if(temp == sum)
+		     {  
+			  System.out.println("Pair is:"+arr[start]+","+arr[end]);
+		      return;
+			  /* start++;       // for printing all pairs in a sorted array
+		      end--;  */
+		     }
+		  else if(temp < sum)
+			  start++;
+		  else
+			  end--;
+	  }
+  }
+  
+	public static void main(String[] args) {
+       /* int arr[] = new int[]{2,2,3,5,4,7,6};
+        //inversionCount(arr);
+        int a[] = new int[]{2, 3, 10, 6, 4, 8, 1};
+        int b[] = new int[]{-10, -5, 3, 4, 7, 9};
+        System.out.println(fixedPoint(b, 0, b.length-1)); */
+        
+        Pair a = new Pair(5,24);
+        Pair b = new Pair(15,28);
+        Pair c = new Pair(27,40);
+        Pair d = new Pair(39,60);
+        Pair e = new Pair(50,90);
+        Pair arr5[] = new Pair[]{a,b,c,d,e};
+        //System.out.println(maxChainLength3(arr5));  
+        
+        int myArr[] = new int[]{3, 1, 1, 2, 2, 1};
+       // System.out.println(isPartition2(myArr));
+        
+        int val[] = new int[]{1, 5, 8, 9, 10, 17, 17, 20};
+        int wt[] = new int[]{1,1,1,1,1,1,1,1};
+        //System.out.println(knapsack(8, val, wt, 8));
+	}
+}
+class Pair 
+{
+	int a;
+	int b;
+	Pair(int a, int b)
+	{
+		this.a = a;
+		this.b = b;
+	}
+}
