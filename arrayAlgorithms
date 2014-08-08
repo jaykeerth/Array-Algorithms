@@ -2159,7 +2159,7 @@ public class Array {
 			for(int j=1; j<colSize; j++)
 			{
 				if(mat[i][j] == 1)
-					submatrix[i][j] = min(submatrix[i][j-1], submatrix[i-1][j], submatrix[i-1][j-1]);
+					submatrix[i][j] = min(submatrix[i][j-1], submatrix[i-1][j], submatrix[i-1][j-1]) + 1;
 				else
 					submatrix[i][j] = 0;
 			}
