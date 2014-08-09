@@ -1008,13 +1008,13 @@ public class Array {
 	}
 	static int array[] = new int[]{1,2,3,4,5};
 	static int backward = 1;
-	public static void productArray3(int n, int i, int forward)
+	public static void productArray3(int n, int i, int forward)    //doing in-place
 	{
 		if(i >= n-1)
 			return;
 		forward *= array[i];
 		productArray3(n, i+1, forward);
-		int temp = array[i+1];
+		//int temp = array[i+1];
 		array[i+1] = forward * backward;
 		backward *= array[i+1];
 	}
