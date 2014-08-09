@@ -972,7 +972,7 @@ public class Array {
 	    	 {
 	    		 if(i <= j+arr[j] && jumps[j] != Integer.MAX_VALUE)
 	    		 {
-	    			 jumps[i] = jumps[j] + 1;
+	    			 jumps[i] = Math.min(jumps[i], jumps[j] + 1);
 	    			 break;
 	    		 }
 	    	 }
